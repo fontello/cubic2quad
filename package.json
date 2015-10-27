@@ -1,6 +1,6 @@
 {
   "name": "cubic2quad",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "description": "Approximate cubic Bezier curve with a number of quadratic ones",
   "keywords": [
     "cubic",
@@ -12,6 +12,10 @@
   "scripts": {
     "test": "make test"
   },
+  "files": [
+    "index.js",
+    "lib/"
+  ],
   "devDependencies": {
     "ansi": "*",
     "benchmark": "*",
