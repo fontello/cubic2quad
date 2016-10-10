@@ -22,11 +22,11 @@ Point.prototype.div = function (value) {
 };
 
 Point.prototype.dist = function () {
-  return Math.sqrt(this.x*this.x + this.y*this.y);
+  return Math.sqrt(this.x * this.x + this.y * this.y);
 };
 
 Point.prototype.sqr = function () {
-  return this.x*this.x + this.y*this.y;
+  return this.x * this.x + this.y * this.y;
 };
 
 Point.prototype.dot = function (point) {
@@ -59,7 +59,7 @@ function calcPointQuad(a, b, c, t) {
 
 function calcPointDerivative(a, b, c, d, t) {
   // d/dt[a*t^3 + b*t^2 + c*t + d] = 3*a*t^2 + 2*b*t + c = (3*a*t + 2*b)*t + c
-  return a.mul(3*t).add(b.mul(2)).mul(t).add(c);
+  return a.mul(3 * t).add(b.mul(2)).mul(t).add(c);
 }
 
 function quadSolve(a, b, c) {
@@ -67,18 +67,18 @@ function quadSolve(a, b, c) {
   if (a === 0) {
     return (b === 0) ? [] : [ -c / b ];
   }
-  var D = b*b - 4*a*c;
+  var D = b * b - 4 * a * c;
   if (D < 0) {
     return [];
   } else if (D === 0) {
-    return [ -b/(2*a) ];
+    return [ -b / (2 * a) ];
   }
   var DSqrt = Math.sqrt(D);
-  return [ (-b - DSqrt) / (2*a), (-b + DSqrt) / (2*a) ];
+  return [ (-b - DSqrt) / (2 * a), (-b + DSqrt) / (2 * a) ];
 }
 
 function cubicRoot(x) {
-  return (x < 0) ? -Math.pow(-x, 1/3) : Math.pow(x, 1/3);
+  return (x < 0) ? -Math.pow(-x, 1 / 3) : Math.pow(x, 1 / 3);
 }
 
 function cubicSolve(a, b, c, d) {
@@ -88,16 +88,16 @@ function cubicSolve(a, b, c, d) {
   }
   // solve using Cardan's method, which is described in paper of R.W.D. Nickals
   // http://www.nickalls.org/dick/papers/maths/cubic1993.pdf (doi:10.2307/3619777)
-  var xn = -b / (3*a); // point of symmetry x coordinate
+  var xn = -b / (3 * a); // point of symmetry x coordinate
   var yn = ((a * xn + b) * xn + c) * xn + d; // point of symmetry y coordinate
-  var deltaSq = (b*b - 3*a*c) / (9*a*a); // delta^2
-  var hSq = 4*a*a * Math.pow(deltaSq, 3); // h^2
-  var D3 = yn*yn - hSq;
+  var deltaSq = (b * b - 3 * a * c) / (9 * a * a); // delta^2
+  var hSq = 4 * a * a * Math.pow(deltaSq, 3); // h^2
+  var D3 = yn * yn - hSq;
   if (D3 > 0) { // 1 real root
     var D3Sqrt = Math.sqrt(D3);
-    return [ xn + cubicRoot((-yn + D3Sqrt)/(2*a)) + cubicRoot((-yn - D3Sqrt)/(2*a)) ];
+    return [ xn + cubicRoot((-yn + D3Sqrt) / (2 * a)) + cubicRoot((-yn - D3Sqrt) / (2 * a)) ];
   } else if (D3 === 0) { // 2 real roots
-    var delta1 = cubicRoot(yn/(2*a));
+    var delta1 = cubicRoot(yn / (2 * a));
     return [ xn - 2 * delta1, xn + delta1 ];
   }
   // 3 real roots
@@ -178,9 +178,12 @@ function processSegment(a, b, c, d, t1, t2) {
   if (Math.abs(D) < 1e-8) {
     return [ f1, f1.add(f2).div(2), f2 ]; // straight line segment
   }
-  var cx = (f1_.x*(f2.y*f2_.x - f2.x*f2_.y) + f2_.x*(f1.x*f1_.y - f1.y*f1_.x)) / D;
-  var cy = (f1_.y*(f2.y*f2_.x - f2.x*f2_.y) + f2_.y*(f1.x*f1_.y - f1.y*f1_.x)) / D;
-  return [ f1, new Point(cx, cy), f2 ];
+  var z1 = (f2_.y * f1.x - f2_.x * f1.y - f2_.y * f2.x + f2_.x * f2.y) / D;
+  var z2 = (f1_.y * f1.x - f1_.x * f1.y - f1_.y * f2.x + f1_.x * f2.y) / D;
+  if (z1 < 0 || z2 > 0) {
+    return [ f1, f1.add(f2).div(2), f2 ];
+  }
+  return [ f1, f1.add(f1_.mul(z1)), f2 ];
 }
 
 function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBound) {
@@ -202,8 +205,9 @@ function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBo
 
   var n = 10; // number of points + 1
   var dt = (tmax - tmin) / n;
-  for (var t = tmin + dt; t < tmax - dt; t += dt) { // don't check distance on boundary points
-                                                    // because they should be the same
+  for (var i = 0; i <= n; i++) { // don't check distance on boundary points
+    var t = tmin + (tmax - tmin) * (i / n);
+    // because they should be the same
     var point = calcPoint(a, b, c, d, t);
     if (minDistanceToQuad(point, p1, c1, p2) > errorBound) {
       return false;
@@ -212,13 +216,12 @@ function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBo
   return true;
 }
 
-function _isApproximationClose(a, b, c, d, quadCurves, errorBound) {
-  var dt = 1/quadCurves.length;
+function _isApproximationClose(a, b, c, d, quadCurves, ts, errorBound) {
   for (var i = 0; i < quadCurves.length; i++) {
     var p1 = quadCurves[i][0];
     var c1 = quadCurves[i][1];
     var p2 = quadCurves[i][2];
-    if (!isSegmentApproximationClose(a, b, c, d, i * dt, (i + 1) * dt, p1, c1, p2, errorBound)) {
+    if (!isSegmentApproximationClose(a, b, c, d, ts[i], ts[i + 1], p1, c1, p2, errorBound)) {
       return false;
     }
   }
@@ -251,15 +254,28 @@ function toFlatArray(quadsList) {
   return result;
 }
 
-function isApproximationClose(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, quads, errorBound) {
+function isApproximationClose(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, quads, errorBound, _ts) {
   // TODO: rewrite it in C-style and remove _isApproximationClose
+  var ts = [ 0 ];
+  for (var j = 0; j < quads.length; j++) {
+    ts.push((j + 1) / quads.length);
+  }
   var pc = calcPowerCoefficients(
     new Point(p1x, p1y),
     new Point(c1x, c1y),
     new Point(c2x, c2y),
     new Point(p2x, p2y)
   );
-  return _isApproximationClose(pc[0], pc[1], pc[2], pc[3], fromFlatArray(quads), errorBound);
+  return _isApproximationClose(pc[0], pc[1], pc[2], pc[3], fromFlatArray(quads), _ts || ts, errorBound);
+}
+
+function VALID(t) { return t > 0 && t < 1; }
+function solveInflections(x1, y1, x2, y2, x3, y3, x4, y4) {
+  var p = -(x4 * (y1 - 2 * y2 + y3)) + x3 * (2 * y1 - 3 * y2 + y4)
+    + x1 * (y2 - 2 * y3 + y4) - x2 * (y1 - 3 * y3 + 2 * y4);
+  var q = x4 * (y1 - y2) + 3 * x3 * (-y1 + y2) + x2 * (2 * y1 - 3 * y3 + y4) - x1 * (2 * y2 - 3 * y3 + y4);
+  var r = x3 * (y1 - y2) + x1 * (y2 - y3) + x2 * (-y1 + y3);
+  return quadSolve(p, q, r).filter(VALID);
 }
 
 
@@ -270,7 +286,7 @@ function isApproximationClose(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, quads, err
  * simplified Hausdorff distance to determine number of segments that is enough to make error small.
  * In general the method is the same as described here: https://fontforge.github.io/bezier.html.
  */
-function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
+function _cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
   var p1 = new Point(p1x, p1y);
   var c1 = new Point(c1x, c1y);
   var c2 = new Point(c2x, c2y);
@@ -278,26 +294,47 @@ function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
   var pc = calcPowerCoefficients(p1, c1, c2, p2);
   var a = pc[0], b = pc[1], c = pc[2], d = pc[3];
 
+  var inflectionTs = solveInflections(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+  // console.log(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, inflectionTs);
+  var ts;
   var approximation;
   for (var segmentsCount = 1; segmentsCount <= 8; segmentsCount++) {
+    ts = [ 0 ];
+    var inflectionJ = 0;
+    for (var n = 0; n < segmentsCount; n++) {
+      var t = (n + 1) / segmentsCount;
+      if (inflectionJ < inflectionTs.length && t > inflectionTs[inflectionJ]) {
+        ts.push(inflectionTs[inflectionJ]);
+        inflectionJ += 1;
+      }
+      ts.push(t);
+    }
     approximation = [];
-    for (var t = 0; t < 1; t += 1/segmentsCount) {
-      approximation.push(processSegment(a, b, c, d, t, t + 1/segmentsCount));
+    for (var j = 0; j < ts.length - 1; j++) {
+      approximation.push(processSegment(a, b, c, d, ts[j], ts[j + 1]));
     }
     if (segmentsCount === 1 && (
-        approximation[0][1].sub(p1).dot(c1.sub(p1)) < 0 ||
-        approximation[0][1].sub(p2).dot(c2.sub(p2)) < 0)) {
+      approximation[0][1].sub(p1).dot(c1.sub(p1)) < 0 ||
+      approximation[0][1].sub(p2).dot(c2.sub(p2)) < 0)) {
       // approximation concave, while the curve is convex (or vice versa)
       continue;
     }
-    if (_isApproximationClose(a, b, c, d, approximation, errorBound)) {
+    if (_isApproximationClose(a, b, c, d, approximation, ts, errorBound)) {
       break;
     }
   }
-  return toFlatArray(approximation);
+  return {
+    quads: toFlatArray(approximation),
+    ts: ts
+  };
+}
+
+function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
+  return _cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound).quads;
 }
 
 module.exports = cubicToQuad;
 // following exports are for testing purposes
 module.exports.isApproximationClose = isApproximationClose;
+module.exports._cubicToQuad = _cubicToQuad;
 module.exports.cubicSolve = cubicSolve;
