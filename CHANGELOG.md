@@ -1,4 +1,4 @@
-1.0.1 / 2016-10-26
+1.1.0 / 2016-10-26
 ------------------
 
 - Support curves with inflection point.
