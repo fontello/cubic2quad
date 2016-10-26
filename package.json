@@ -10,7 +10,11 @@
   "license": "MIT",
   "repository": "fontello/cubic2quad",
   "scripts": {
-    "test": "make test"
+    "lint": "eslint .",
+    "benchmark": "npm run lint && ./benchmark/benchmark.js",
+    "test": "npm run lint && mocha",
+    "coverage": "rm -rf coverage && istanbul cover _mocha",
+    "report-coveralls": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
   },
   "files": [
     "index.js",
@@ -20,9 +24,8 @@
     "ansi": "*",
     "benchmark": "*",
     "coveralls": "~2.11.2",
-    "eslint": "0.19.0",
-    "eslint-plugin-nodeca": "~1.0.3",
-    "istanbul": "*",
-    "mocha": "*"
+    "eslint": "^3.8.1",
+    "istanbul": "^0.4.5",
+    "mocha": "^3.1.2"
   }
 }
