@@ -264,13 +264,55 @@ function isApproximationClose(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, quads, err
 
 
 /*
+ * Split cubic bézier curve into two cubic curves, see details here:
+ * https://math.stackexchange.com/questions/877725
+ */
+function subdivideCubic(x1, y1, x2, y2, x3, y3, x4, y4, t) {
+  var u = 1-t, v = t;
+
+  var bx = x1*u + x2*v;
+  var sx = x2*u + x3*v;
+  var fx = x3*u + x4*v;
+  var cx = bx*u + sx*v;
+  var ex = sx*u + fx*v;
+  var dx = cx*u + ex*v;
+
+  var by = y1*u + y2*v;
+  var sy = y2*u + y3*v;
+  var fy = y3*u + y4*v;
+  var cy = by*u + sy*v;
+  var ey = sy*u + fy*v;
+  var dy = cy*u + ey*v;
+
+  return [
+    [ x1, y1, bx, by, cx, cy, dx, dy ],
+    [ dx, dy, ex, ey, fx, fy, x4, y4 ]
+  ];
+}
+
+
+/*
+ * Find inflection points on a cubic curve, algorithm is similar to this one:
+ * http://www.caffeineowl.com/graphics/2d/vectorial/cubic-inflexion.html
+ */
+function solveInflections(x1, y1, x2, y2, x3, y3, x4, y4) {
+  var p = -(x4 * (y1 - 2 * y2 + y3)) + x3 * (2 * y1 - 3 * y2 + y4)
+    + x1 * (y2 - 2 * y3 + y4) - x2 * (y1 - 3 * y3 + 2 * y4);
+  var q = x4 * (y1 - y2) + 3 * x3 * (-y1 + y2) + x2 * (2 * y1 - 3 * y3 + y4) - x1 * (2 * y2 - 3 * y3 + y4);
+  var r = x3 * (y1 - y2) + x1 * (y2 - y3) + x2 * (-y1 + y3);
+
+  return quadSolve(p, q, r).filter(function (t) { return t > 1e-8 && t < 1 - 1e-8; }).sort();
+}
+
+
+/*
  * Approximate cubic Bezier curve defined with base points p1, p2 and control points c1, c2 with
  * with a few quadratic Bezier curves.
  * The function uses tangent method to find quadratic approximation of cubic curve segment and
  * simplified Hausdorff distance to determine number of segments that is enough to make error small.
  * In general the method is the same as described here: https://fontforge.github.io/bezier.html.
  */
-function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
+function _cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
   var p1 = new Point(p1x, p1y);
   var c1 = new Point(c1x, c1y);
   var c2 = new Point(c2x, c2y);
@@ -296,6 +338,52 @@ function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
   }
   return toFlatArray(approximation);
 }
+
+
+/*
+ * If this curve has any inflection points, split the curve and call
+ * _cubicToQuad function on each resulting curve.
+ */
+function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
+  var inflections = solveInflections(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y);
+
+  if (!inflections.length) {
+    return _cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound);
+  }
+
+  var result = [];
+  var curve = [ p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y ];
+  var prevPoint = 0;
+  var quad, split;
+
+  for (var inflectionIdx = 0; inflectionIdx < inflections.length; inflectionIdx++) {
+    split = subdivideCubic(
+      curve[0], curve[1], curve[2], curve[3],
+      curve[4], curve[5], curve[6], curve[7],
+      // we make a new curve, so adjust inflection point accordingly
+      1 - (1 - inflections[inflectionIdx]) / (1 - prevPoint)
+    );
+
+    quad = _cubicToQuad(
+      split[0][0], split[0][1], split[0][2], split[0][3],
+      split[0][4], split[0][5], split[0][6], split[0][7],
+      errorBound
+    );
+
+    result = result.concat(quad.slice(0, -2));
+    curve = split[1];
+    prevPoint = inflections[inflectionIdx];
+  }
+
+  quad = _cubicToQuad(
+    curve[0], curve[1], curve[2], curve[3],
+    curve[4], curve[5], curve[6], curve[7],
+    errorBound
+  );
+
+  return result.concat(quad);
+}
+
 
 module.exports = cubicToQuad;
 // following exports are for testing purposes
