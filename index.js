@@ -290,7 +290,7 @@ function subdivideCubic(x1, y1, x2, y2, x3, y3, x4, y4, t) {
   ];
 }
 
-function byNumber(x, y) { return x - y }
+function byNumber(x, y) { return x - y; }
 
 /*
  * Find inflection points on a cubic curve, algorithm is similar to this one:
