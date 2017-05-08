@@ -290,6 +290,7 @@ function subdivideCubic(x1, y1, x2, y2, x3, y3, x4, y4, t) {
   ];
 }
 
+function byNumber(x, y) { return x - y }
 
 /*
  * Find inflection points on a cubic curve, algorithm is similar to this one:
@@ -301,7 +302,7 @@ function solveInflections(x1, y1, x2, y2, x3, y3, x4, y4) {
   var q = x4 * (y1 - y2) + 3 * x3 * (-y1 + y2) + x2 * (2 * y1 - 3 * y3 + y4) - x1 * (2 * y2 - 3 * y3 + y4);
   var r = x3 * (y1 - y2) + x1 * (y2 - y3) + x2 * (-y1 + y3);
 
-  return quadSolve(p, q, r).filter(function (t) { return t > 1e-8 && t < 1 - 1e-8; }).sort();
+  return quadSolve(p, q, r).filter(function (t) { return t > 1e-8 && t < 1 - 1e-8; }).sort(byNumber);
 }
 
 
