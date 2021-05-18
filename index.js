@@ -47,6 +47,18 @@ function calcPowerCoefficients(p1, c1, c2, p2) {
   return [ a, b, c, d ];
 }
 
+function calcPowerCoefficientsQuad(p1, c1, p2) {
+  // point(t) = p1*(1-t)^2 + c1*t*(1-t) + p2*t^2 = a*t^2 + b*t + c
+  // for each t value, so
+  // a = p1 + p2 - 2 * c1
+  // b = 2 * (c1 - p1)
+  // c = p1
+  var a = c1.mul(-2).add(p1).add(p2);
+  var b = c1.sub(p1).mul(2);
+  var c = p1;
+  return [ a, b, c ];
+}
+
 function calcPoint(a, b, c, d, t) {
   // a*t^3 + b*t^2 + c*t + d = ((a*t + b)*t + c)*t + d
   return a.mul(t).add(b).mul(t).add(c).mul(t).add(d);
@@ -77,11 +89,11 @@ function quadSolve(a, b, c) {
   return [ (-b - DSqrt) / (2*a), (-b + DSqrt) / (2*a) ];
 }
 
-function cubicRoot(x) {
+/*function cubicRoot(x) {
   return (x < 0) ? -Math.pow(-x, 1/3) : Math.pow(x, 1/3);
-}
+}*/
 
-function cubicSolve(a, b, c, d) {
+/*function cubicSolve(a, b, c, d) {
   // a*x^3 + b*x^2 + c*x + d = 0
   if (a === 0) {
     return quadSolve(b, c, d);
@@ -93,12 +105,12 @@ function cubicSolve(a, b, c, d) {
   var deltaSq = (b*b - 3*a*c) / (9*a*a); // delta^2
   var hSq = 4*a*a * Math.pow(deltaSq, 3); // h^2
   var D3 = yn*yn - hSq;
-  if (D3 > 0) { // 1 real root
-    var D3Sqrt = Math.sqrt(D3);
-    return [ xn + cubicRoot((-yn + D3Sqrt)/(2*a)) + cubicRoot((-yn - D3Sqrt)/(2*a)) ];
-  } else if (D3 === 0) { // 2 real roots
+  if (Math.abs(D3) < 1e-15) { // 2 real roots
     var delta1 = cubicRoot(yn/(2*a));
     return [ xn - 2 * delta1, xn + delta1 ];
+  } else if (D3 > 0) { // 1 real root
+    var D3Sqrt = Math.sqrt(D3);
+    return [ xn + cubicRoot((-yn + D3Sqrt)/(2*a)) + cubicRoot((-yn - D3Sqrt)/(2*a)) ];
   }
   // 3 real roots
   var theta = Math.acos(-yn / Math.sqrt(hSq)) / 3;
@@ -108,9 +120,31 @@ function cubicSolve(a, b, c, d) {
     xn + 2 * delta * Math.cos(theta + Math.PI * 2 / 3),
     xn + 2 * delta * Math.cos(theta + Math.PI * 4 / 3)
   ];
+}*/
+
+/*
+ * Calculate a distance between a `point` and a line segment `p1, p2`
+ * (result is squared for performance reasons), see details here:
+ * https://stackoverflow.com/questions/849211/shortest-distance-between-a-point-and-a-line-segment
+ */
+function minDistanceToLineSq(point, p1, p2) {
+  var p1p2 = p2.sub(p1);
+  var dot = point.sub(p1).dot(p1p2);
+  var lenSq = p1p2.sqr();
+  var param = 0;
+  var diff;
+  if (lenSq !== 0) param = dot / lenSq;
+  if (param <= 0) {
+    diff = point.sub(p1);
+  } else if (param >= 1) {
+    diff = point.sub(p2);
+  } else {
+    diff = point.sub(p1.add(p1p2.mul(param)));
+  }
+  return diff.sqr();
 }
 
-function minDistanceToQuad(point, p1, c1, p2) {
+/*function minDistanceToQuad(point, p1, c1, p2) {
   // f(t) = (1-t)^2 * p1 + 2*t*(1 - t) * c1 + t^2 * p2 = a*t^2 + b*t + c, t in [0, 1],
   // a = p1 + p2 - 2 * c1
   // b = 2 * (c1 - p1)
@@ -146,7 +180,7 @@ function minDistanceToQuad(point, p1, c1, p2) {
     }
   }
   return minDistance;
-}
+}*/
 
 
 function processSegment(a, b, c, d, t1, t2) {
@@ -183,7 +217,7 @@ function processSegment(a, b, c, d, t1, t2) {
   return [ f1, new Point(cx, cy), f2 ];
 }
 
-function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBound) {
+/*function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBound) {
   // a,b,c,d define cubic curve
   // tmin, tmax are boundary points on cubic curve
   // p1, c1, p2 define quadratic curve
@@ -209,6 +243,67 @@ function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBo
       return false;
     }
   }
+  return true;
+}*/
+
+
+/*
+ * Divide cubic and quadratic curves into 10 points and 9 line segments.
+ * Calculate distances between each point on cubic and nearest line segment
+ * on quadratic (and vice versa), and make sure all distances are less
+ * than `errorBound`.
+ *
+ * We need to calculate BOTH distance from all points on quadratic to any cubic,
+ * and all points on cubic to any quadratic.
+ *
+ * If we do it only one way, it may lead to an error if the entire original curve
+ * falls within errorBound (then **any** quad will erroneously treated as good):
+ * https://github.com/fontello/svg2ttf/issues/105#issuecomment-842558027
+ *
+ *  - a,b,c,d define cubic curve (power coefficients)
+ *  - tmin, tmax are boundary points on cubic curve (in 0-1 range)
+ *  - p1, c1, p2 define quadratic curve (control points)
+ *  - errorBound is maximum allowed distance
+ */
+function isSegmentApproximationClose(a, b, c, d, tmin, tmax, p1, c1, p2, errorBound) {
+  var n = 10; // number of points
+  var t, dt;
+  var p = calcPowerCoefficientsQuad(p1, c1, p2);
+  var qa = p[0], qb = p[1], qc = p[2];
+  var i, j, distSq;
+  var errorBoundSq = errorBound * errorBound;
+  var cubicPoints = [];
+  var quadPoints  = [];
+  var minDistSq;
+
+  dt = (tmax - tmin) / n;
+  for (i = 0, t = tmin; i <= n; i++, t += dt) {
+    cubicPoints.push(calcPoint(a, b, c, d, t));
+  }
+
+  dt = 1 / n;
+  for (i = 0, t = 0; i <= n; i++, t += dt) {
+    quadPoints.push(calcPointQuad(qa, qb, qc, t));
+  }
+
+  for (i = 1; i < cubicPoints.length - 1; i++) {
+    minDistSq = Infinity;
+    for (j = 0; j < quadPoints.length - 1; j++) {
+      distSq = minDistanceToLineSq(cubicPoints[i], quadPoints[j], quadPoints[j + 1]);
+      minDistSq = Math.min(minDistSq, distSq);
+    }
+    if (minDistSq > errorBoundSq) return false;
+  }
+
+  for (i = 1; i < quadPoints.length - 1; i++) {
+    minDistSq = Infinity;
+    for (j = 0; j < cubicPoints.length - 1; j++) {
+      distSq = minDistanceToLineSq(quadPoints[i], cubicPoints[j], cubicPoints[j + 1]);
+      minDistSq = Math.min(minDistSq, distSq);
+    }
+    if (minDistSq > errorBoundSq) return false;
+  }
+
   return true;
 }
 
@@ -389,4 +484,4 @@ function cubicToQuad(p1x, p1y, c1x, c1y, c2x, c2y, p2x, p2y, errorBound) {
 module.exports = cubicToQuad;
 // following exports are for testing purposes
 module.exports.isApproximationClose = isApproximationClose;
-module.exports.cubicSolve = cubicSolve;
+//module.exports.cubicSolve = cubicSolve;

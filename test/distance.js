@@ -22,10 +22,17 @@ describe('measure error of approximation and confirm that', function () {
   });
   it('two quadratic curves (distance between CP is 0.01) are not same (error ~ 1e-8)', function () {
     assert(!isApproximationClose(0, 0, 10, 10, 20, 10, 30, 0,
-        [ 0, 15, 15.01, 30, 0 ], 1e-8));
+        [ 0, 0, 15, 15.01, 30, 0 ], 1e-8));
   });
   it('two quadratic curves (distance between CP is 0.01) are same (error ~ 0.1)', function () {
     assert(isApproximationClose(0, 0, 10, 10, 20, 10, 30, 0,
         [ 0, 0, 15, 15.01, 30, 0 ], 0.1));
+  });
+  it('small cubic curve should not be same as large quadratic', function () {
+    // regression test for https://github.com/fontello/svg2ttf/issues/105
+    // entire cubic curve falls well within error bound
+    assert(!isApproximationClose(
+        566.970047, 693.362153, 566.970047, 693.566941, 567.277229, 693.669335, 567.27723, 693.566941,
+        [ 566.970047, 693.362153, 566.970047, 32147.26312251112, 567.27723, 693.5669409999996 ], 1));
   });
 });
