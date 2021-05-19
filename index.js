@@ -21,9 +21,9 @@ Point.prototype.div = function (value) {
   return new Point(this.x / value, this.y / value)
 }
 
-Point.prototype.dist = function () {
+/*Point.prototype.dist = function () {
   return Math.sqrt(this.x * this.x + this.y * this.y)
-}
+}*/
 
 Point.prototype.sqr = function () {
   return this.x * this.x + this.y * this.y
