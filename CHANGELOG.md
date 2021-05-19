@@ -1,4 +1,4 @@
-1.2.0 / WIP
+1.2.0 / 2021-05-21
 ------------------
 
 - Fixed wrong approximation for very small cubic curves: when diff between
