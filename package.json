@@ -20,9 +20,9 @@
     "lib/"
   ],
   "devDependencies": {
-    "ansi": "*",
-    "benchmark": "*",
-    "mocha": "^3.1.2",
+    "ansi": "^0.3.1",
+    "benchmark": "^2.1.4",
+    "mocha": "^8.4.0",
     "nyc": "^15.1.0",
     "standardx": "^7.0.0"
   }
