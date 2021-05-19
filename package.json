@@ -12,9 +12,8 @@
   "scripts": {
     "lint": "eslint .",
     "benchmark": "npm run lint && ./benchmark/benchmark.js",
-    "test": "npm run lint && mocha",
-    "coverage": "rm -rf coverage && istanbul cover _mocha",
-    "report-coveralls": "istanbul cover _mocha --report lcovonly -- -R spec && cat ./coverage/lcov.info | coveralls && rm -rf ./coverage"
+    "test": "npm run lint && nyc mocha",
+    "covreport": "nyc report --reporter html && nyc report --reporter lcov"
   },
   "files": [
     "index.js",
@@ -25,7 +24,7 @@
     "benchmark": "*",
     "coveralls": "~2.11.2",
     "eslint": "^3.8.1",
-    "istanbul": "^0.4.5",
-    "mocha": "^3.1.2"
+    "mocha": "^3.1.2",
+    "nyc": "^15.1.0"
   }
 }

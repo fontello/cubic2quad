@@ -1,7 +1,7 @@
 cubic2quad
 ==========
 
-[![Build Status](https://img.shields.io/travis/fontello/cubic2quad/master.svg?style=flat)](https://travis-ci.org/fontello/cubic2quad)
+[![CI](https://github.com/fontello/cubic2quad/actions/workflows/ci.yml/badge.svg)](https://github.com/fontello/cubic2quad/actions/workflows/ci.yml)
 [![NPM version](https://img.shields.io/npm/v/cubic2quad.svg?style=flat)](https://www.npmjs.org/package/cubic2quad)
 [![Coverage Status](https://img.shields.io/coveralls/fontello/cubic2quad/master.svg?style=flat)](https://coveralls.io/r/fontello/cubic2quad?branch=master)
 
