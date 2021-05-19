@@ -10,7 +10,7 @@
   "license": "MIT",
   "repository": "fontello/cubic2quad",
   "scripts": {
-    "lint": "eslint .",
+    "lint": "standardx -v .",
     "benchmark": "npm run lint && ./benchmark/benchmark.js",
     "test": "npm run lint && nyc mocha",
     "covreport": "nyc report --reporter html && nyc report --reporter lcov"
@@ -22,9 +22,8 @@
   "devDependencies": {
     "ansi": "*",
     "benchmark": "*",
-    "coveralls": "~2.11.2",
-    "eslint": "^3.8.1",
     "mocha": "^3.1.2",
-    "nyc": "^15.1.0"
+    "nyc": "^15.1.0",
+    "standardx": "^7.0.0"
   }
 }
