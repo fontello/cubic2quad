@@ -1,13 +1,14 @@
-/*'use strict'
+'use strict'
 
-var cubicSolve = require('../index').cubicSolve
+//var cubicSolve = require('../index').cubicSolve
+var quadSolve = require('../index').quadSolve
 var assert = require('assert')
 
-function floatsClose(a, b) {
+function floatsClose (a, b) {
   return Math.abs(a - b) < 1e-15
 }
 
-describe('cubic equation solver', function () {
+/*describe('cubic equation solver', function () {
   it('equation with zero coefficients', function () {
     var roots = cubicSolve(0, 0, 0, 0)
     assert.strictEqual(roots.length, 0)
@@ -51,3 +52,30 @@ describe('cubic equation solver', function () {
     assert(floatsClose(roots[2], 1))
   })
 })*/
+
+describe('quadratic equation solver', function () {
+  it('equation with zero coefficients', function () {
+    var roots = quadSolve(0, 0, 0)
+    assert.strictEqual(roots.length, 0)
+  })
+  it('linear equation', function () {
+    var roots = quadSolve(0, 1, -1)
+    assert.strictEqual(roots.length, 1)
+    assert.strictEqual(roots[0], 1)
+  })
+  it('quadratic equation with no real roots', function () {
+    var roots = quadSolve(1, 2, 2)
+    assert.strictEqual(roots.length, 0)
+  })
+  it('quadratic equation with one real root', function () {
+    var roots = quadSolve(1, 2, 1)
+    assert.strictEqual(roots.length, 1)
+    assert(floatsClose(roots[0], -1))
+  })
+  it('quadratic equation with two real roots', function () {
+    var roots = quadSolve(1, 1, 0).sort()
+    assert.strictEqual(roots.length, 2)
+    assert(floatsClose(roots[0], -1))
+    assert(floatsClose(roots[1], 0))
+  })
+})

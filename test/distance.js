@@ -35,4 +35,7 @@ describe('measure error of approximation and confirm that', function () {
       566.970047, 693.362153, 566.970047, 693.566941, 567.277229, 693.669335, 567.27723, 693.566941,
       [566.970047, 693.362153, 566.970047, 32147.26312251112, 567.27723, 693.5669409999996], 1))
   })
+  it('coverage for possible divisions by zero', function () {
+    assert(isApproximationClose(0, 0, 0, 0, 0, 0, 0, 0, [0, 0, 0, 0, 0, 0], 0))
+  })
 })

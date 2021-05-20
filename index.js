@@ -1,5 +1,11 @@
 'use strict'
 
+// Precision used to check determinant in quad and cubic solvers,
+// any number lower than this is considered to be zero.
+// `8.67e-19` is an example of real error occurring in tests.
+var epsilon = 1e-16
+
+
 function Point (x, y) {
   this.x = x
   this.y = y
@@ -80,10 +86,10 @@ function quadSolve (a, b, c) {
     return (b === 0) ? [] : [-c / b]
   }
   var D = b * b - 4 * a * c
-  if (D < 0) {
-    return []
-  } else if (D === 0) {
+  if (Math.abs(D) < epsilon) {
     return [-b / (2 * a)]
+  } else if (D < 0) {
+    return []
   }
   var DSqrt = Math.sqrt(D)
   return [(-b - DSqrt) / (2 * a), (-b + DSqrt) / (2 * a)]
@@ -91,9 +97,9 @@ function quadSolve (a, b, c) {
 
 /*function cubicRoot(x) {
   return (x < 0) ? -Math.pow(-x, 1/3) : Math.pow(x, 1/3)
-}*/
+}
 
-/*function cubicSolve(a, b, c, d) {
+function cubicSolve(a, b, c, d) {
   // a*x^3 + b*x^2 + c*x + d = 0
   if (a === 0) {
     return quadSolve(b, c, d)
@@ -105,7 +111,7 @@ function quadSolve (a, b, c) {
   var deltaSq = (b*b - 3*a*c) / (9*a*a) // delta^2
   var hSq = 4*a*a * Math.pow(deltaSq, 3) // h^2
   var D3 = yn*yn - hSq
-  if (Math.abs(D3) < 1e-15) { // 2 real roots
+  if (Math.abs(D3) < epsilon) { // 2 real roots
     var delta1 = cubicRoot(yn/(2*a))
     return [ xn - 2 * delta1, xn + delta1 ]
   } else if (D3 > 0) { // 1 real root
@@ -486,3 +492,4 @@ module.exports = cubicToQuad
 // following exports are for testing purposes
 module.exports.isApproximationClose = isApproximationClose
 //module.exports.cubicSolve = cubicSolve
+module.exports.quadSolve = quadSolve

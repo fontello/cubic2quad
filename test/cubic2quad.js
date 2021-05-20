@@ -6,14 +6,14 @@ var assert = require('assert')
 describe('convert cubic Bezier curve to a number of quadratic ones', function () {
   it('straight line to the same straight line (error ~ 1e-8)', function () {
     var converted = cubic2quad(0, 0, 10, 10, 20, 20, 30, 30, 1e-8)
-    assert(converted.length === 6)
+    assert.strictEqual(converted.length, 6)
     assert(converted[0] === 0 && converted[1] === 0,
       converted[2] === 15 && converted[3] === 15 &&
       converted[4] === 30 && converted[5] === 30)
   })
   it('quadratic curve to the same quadratic curve (error ~ 1e-8)', function () {
     var converted = cubic2quad(0, 0, 10, 10, 20, 10, 30, 0, 1e-8)
-    assert(converted.length === 6)
+    assert.strictEqual(converted.length, 6)
     assert(converted[0] === 0 && converted[1] === 0 &&
       converted[2] === 15 && converted[3] === 15 &&
       converted[4] === 30 && converted[5] === 0)
@@ -21,7 +21,11 @@ describe('convert cubic Bezier curve to a number of quadratic ones', function ()
   it('cubic curve that is close to quadratic to a quadratic one (error ~ 0.1)', function () {
     // real error is 0.1, but our approximation increases error to 0.15
     var converted = cubic2quad(0, 0, 10, 9, 20, 11, 30, 0, 0.15)
-    assert(converted.length === 6)
+    assert.strictEqual(converted.length, 6)
+  })
+  it('cubic curve should be split due to small error margin', function () {
+    var converted = cubic2quad(0, 0, 10, 9, 20, 11, 30, 0, 0.01)
+    assert.strictEqual(converted.length, 14)
   })
   it('should be able to handle inflections (error ~ 0.5)', function () {
     var src = [858, -113, 739, -68, 624, -31, 533, 0]

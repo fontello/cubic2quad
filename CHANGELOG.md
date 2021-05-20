@@ -1,3 +1,11 @@
+1.2.1 / WIP
+------------------
+
+- Restored code coverage to 100%.
+- Add floating point error tolerance in quad (1 root case) and cubic
+  (2 root case) solvers.
+
+
 1.2.0 / 2021-05-21
 ------------------
 
