@@ -1,4 +1,4 @@
-1.2.1 / WIP
+1.2.1 / 2021-05-20
 ------------------
 
 - Restored code coverage to 100%.
@@ -6,7 +6,7 @@
   (2 root case) solvers.
 
 
-1.2.0 / 2021-05-21
+1.2.0 / 2021-05-19
 ------------------
 
 - Fixed wrong approximation for very small cubic curves: when diff between
