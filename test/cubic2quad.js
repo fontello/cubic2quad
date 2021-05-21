@@ -44,11 +44,11 @@ describe('convert cubic Bezier curve to a number of quadratic ones', function ()
     var converted = cubic2quad(src[0], src[1], src[2], src[3],
       src[4], src[5], src[6], src[7], 1000)
     // 1st inflection point
-    assert.equal(converted[4].toFixed(2), '34.33')
-    assert.equal(converted[5].toFixed(2), '45.45')
+    assert.strictEqual(converted[4].toFixed(2), '34.33')
+    assert.strictEqual(converted[5].toFixed(2), '45.45')
     // 2nd inflection point
-    assert.equal(converted[8].toFixed(2), '65.67')
-    assert.equal(converted[9].toFixed(2), '45.45')
+    assert.strictEqual(converted[8].toFixed(2), '65.67')
+    assert.strictEqual(converted[9].toFixed(2), '45.45')
   })
   it('cubic curve have to be converted to two or more quads for large errorBound (error ~ 100)', function () {
     var src = [0, 0, -5, 10, 35, 10, 30, 0]
