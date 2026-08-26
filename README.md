@@ -5,7 +5,7 @@ cubic2quad
 [![NPM version](https://img.shields.io/npm/v/cubic2quad.svg?style=flat)](https://www.npmjs.org/package/cubic2quad)
 [![Coverage Status](https://img.shields.io/coveralls/fontello/cubic2quad/master.svg?style=flat)](https://coveralls.io/r/fontello/cubic2quad?branch=master)
 
-> Aproximates cubic Bezier curves with quadratic ones.
+> Approximates cubic Bezier curves with quadratic ones.
 
 This package was done to create TTF fonts (those support quadratic curves only).
 Generated curves have the same tangents angles at the ends. That's important to
